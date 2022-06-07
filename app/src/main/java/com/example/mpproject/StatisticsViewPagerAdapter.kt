@@ -11,10 +11,10 @@ class StatisticsViewPagerAdapter(fragmentActivity: FragmentActivity):FragmentSta
 
     override fun createFragment(position: Int): Fragment {
         return when(position) {
-            0->StatisticsFragmentWeek()
-            1->StatisticsFragmentMonth()
-            2->StatisticsFragment6Month()
-            else->StatisticsFragmentYear()
+            0->StatisticsFragmentDay()
+            1->StatisticsFragmentType()
+            2->StatisticsFragmentMonth()
+            else->StatisticsFragmentKcal()
         }
     }
 

@@ -5,8 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#E6DEDE"
+    android:background="#F5F5F5"
     tools:context=".StatisticsActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
 
     <TextView
         android:layout_width="match_parent"
@@ -26,40 +36,78 @@
         android:layout_marginRight="10dp"
         android:background="@drawable/custom_tab"
         android:padding="5dp"
-        app:tabIndicatorHeight="0dp"
+        app:tabIndicatorHeight="1dp"
+        app:tabIndicatorColor="@color/white"
         app:tabTextColor="@color/black"
         app:tabUnboundedRipple="false">
 
         <com.google.android.material.tabs.TabItem
-            android:id="@+id/statistics_tab_week"
+            android:id="@+id/statistics_tab_day"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
 
-            android:text="주" />
+            android:text="일 음주량" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/statistics_tab_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="월 주종" />
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/statistics_tab_month"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="월" />
+            android:text="월별 비교" />
 
         <com.google.android.material.tabs.TabItem
-            android:id="@+id/statistics_tab_6month"
+            android:id="@+id/statistics_tab_kcal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="6개월" />
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/statistics_tab_year"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="년" />
+            android:text="칼로리" />
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="300dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="30dp"/>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginRight="15dp"
+                    android:background="@drawable/custom_advice" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="설명"
+                    android:textStyle="bold"
+                    android:textSize="15dp"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="40dp"
+                    android:layout_marginLeft="30dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="목표치보다 더 많이 마셨어요!! 경고!!"
+                    android:textSize="15dp"
+                    android:layout_marginTop="70dp"
+                    android:layout_marginLeft="40dp"/>
+
+            </FrameLayout>
 
 
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
