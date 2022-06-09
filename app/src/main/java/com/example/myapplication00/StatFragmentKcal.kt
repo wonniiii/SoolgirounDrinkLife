@@ -1,5 +1,7 @@
 package com.example.myapplication00
 
+import android.app.Activity
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -12,11 +14,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import com.example.projectapp.DBHelper
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarEntry
 
 
 class StatFragmentKcal : Fragment() {
+
+    lateinit var DBHelper: DBHelper
+    lateinit var activity : Activity
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        activity = context as Activity
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -26,15 +39,22 @@ class StatFragmentKcal : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val root =  inflater.inflate(R.layout.fragment_stat_kcal, container, false)
-        val title = root.findViewById<TextView>(R.id.kcal_title)
-        val textData: String = title.text.toString()
-        val builder = SpannableStringBuilder(textData)
-        val colorSpan = ForegroundColorSpan(Color.parseColor("#01DFA5"))
-        builder.setSpan(RelativeSizeSpan(1.5f),21,25, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        builder.setSpan(colorSpan,21,25, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        title.text = builder
+
+        DBHelper = DBHelper(activity)
+        val array = DBHelper.getAllAlcohol()
+
+        val soKcal = array[0]*64
+        val macKcal = array[1]*96
+        val makKcal = array[2]*99
+        val wineKcal = array[3]*70
+
+        val totalKcal = soKcal+macKcal+makKcal+wineKcal
+
+        val kcal = root.findViewById<TextView>(R.id.kcal)
+        kcal.text = totalKcal.toString()
+
+
         return root
     }
 

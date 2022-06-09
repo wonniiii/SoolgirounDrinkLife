@@ -6,8 +6,10 @@ import java.util.*
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
+import android.util.Log
 import androidx.annotation.Nullable
 import androidx.annotation.RequiresApi
+import com.example.projectapp.DBHelper.Companion.TABLE_NAME
 import java.time.LocalDate
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -17,9 +19,8 @@ import kotlin.collections.HashMap
 
 class DBHelper(val context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
-    // 자바에서 Static과 동일한 역할. 멤버 변수 설정
     companion object {
-        val DB_NAME = "mydb.db"
+        val DB_NAME = "project.db"
         val DB_VERSION = 1
         val TABLE_NAME = "daily"
         val DATE = "date"
@@ -33,9 +34,10 @@ class DBHelper(val context: Context) : SQLiteOpenHelper(context, DB_NAME, null, 
         val ISALLDAY = "isallday"
         val ALARM = "alarm"
         val MEMO = "memo"
-        val ALCOHOL_TYPE = "alcohol_type"
-        val ALCOHOL_QUANTITY = "alcohol_quantity"
-        val ALCOHOL_DEGREE = "alcohol_degree"
+        val SOJU = "soju"
+        val BEER = "beer"
+        val MAKGEOLLI = "makgeolli"
+        val WINE = "wine"
         val DIARY = "diary"
         val SELF_EXAMINATION = "self_examination"
         val TIP = "tip"
@@ -56,9 +58,10 @@ class DBHelper(val context: Context) : SQLiteOpenHelper(context, DB_NAME, null, 
                 "$ISALLDAY boolean, " +
                 "$ALARM text, " +
                 "$MEMO text, " +
-                "$ALCOHOL_TYPE text, " +
-                "$ALCOHOL_QUANTITY integer, " +
-                "$ALCOHOL_DEGREE real, " +
+                "$SOJU integer, " +
+                "$BEER integer, " +
+                "$MAKGEOLLI integer, " +
+                "$WINE integer, " +
                 "$DIARY text, " +
                 "$SELF_EXAMINATION text, " +
                 "$TIP text);"
@@ -73,6 +76,66 @@ class DBHelper(val context: Context) : SQLiteOpenHelper(context, DB_NAME, null, 
 
         db!!.execSQL(drop_table)
         onCreate(db)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun findAlcohol(date: String) : Int {
+        val strsql = "select * from $TABLE_NAME where $DATE = '$date';"
+        val db = readableDatabase
+        val cursor = db.rawQuery(strsql, null)
+        val flag = cursor.count!=0
+        var num = 0
+
+        if(flag){
+            cursor.moveToFirst()
+            num = cursor.getInt(11) + cursor.getInt(12)+cursor.getInt(13)+cursor.getInt(14)
+        }
+        cursor.close()
+        db.close()
+        return num
+    }
+
+    fun getAllAlcohol() : ArrayList<Int> {
+        var strsql="select * from $TABLE_NAME;"
+        val db = readableDatabase
+        val cursor = db.rawQuery(strsql, null)
+        val result = arrayListOf<Int>(0,0,0,0)
+        if(cursor != null && cursor.count >0) {
+            cursor.moveToFirst()
+            do {
+                result[0] = result[0] + cursor.getInt(11)
+                result[1] = result[1] + cursor.getInt(12)
+                result[2] = result[2] + cursor.getInt(13)
+                result[3] = result[3] + cursor.getInt(14)
+            } while (cursor.moveToNext())
+            //작업 완료 후 db, cursor를 닫아주는 함수 호출
+        }
+        cursor.close()
+        db.close()
+        return  result
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun updateAlcohol(array : ArrayList<Int>) : Boolean{
+        val date = LocalDate.now().toString()
+        val strsql = "select * from $TABLE_NAME where $DATE = '$date';"
+        val db = writableDatabase
+        val cursor = db.rawQuery(strsql, null)
+        val flag = cursor.count!=0
+        if(flag){
+            cursor.moveToFirst()
+            val values = ContentValues()
+            values.put(SOJU ,array[0])
+            values.put(BEER, array[1])
+            values.put(MAKGEOLLI, array[2])
+            values.put(WINE, array[3])
+            db.update(TABLE_NAME, values, "$DATE = ?", arrayOf(date))
+        }
+        //작업 완료 후 db, cursor를 닫아주는 함수 호출
+        cursor.close()
+        db.close()
+        return flag
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -149,26 +212,152 @@ class DBHelper(val context: Context) : SQLiteOpenHelper(context, DB_NAME, null, 
         val flag = cursor.count!=0
         cursor.close()
         db.close()
-        return flag;
+        return flag
     }
 
-
-    fun findStatDay(date:String,hashMap: HashMap<String,Float>):Boolean{
-        val strsql = "select * from $TABLE_NAME where $DATE = '$date%';"
-        val db = readableDatabase
-        val cursor = db.rawQuery(strsql, null)
-        val flag = cursor.count!=0
-
-        while (cursor.moveToNext()) {
-            var date = cursor.getString(cursor.getColumnIndex("date")-1)
-            var alchol = cursor.getString(cursor.getColumnIndex("alcohol_quantity")-1)
-            hashMap.put(date,alchol.toFloat())
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getAlcohol(cmonth: Int): ArrayList<Int> {
+        var dayAlchol = ArrayList<Int>()
+        lateinit var date: LocalDate
+        var days = 0
+        val now = LocalDate.now().toString()
+        var parse = now.split("-")
+        when (cmonth) {
+            1 -> {
+                date = LocalDate.of(parse[0].toInt(), 1, 1)
+                days = 31
+            }
+            2 -> {
+                date = LocalDate.of(parse[0].toInt(), 2, 1)
+                days = 30
+            }
+            3 -> {
+                date = LocalDate.of(parse[0].toInt(), 3, 1)
+                days = 31
+            }
+            4 -> {
+                date = LocalDate.of(parse[0].toInt(), 4, 1)
+                days = 30
+            }
+            5 -> {
+                date = LocalDate.of(parse[0].toInt(), 5, 1)
+                days = 31
+            }
+            6 -> {
+                date = LocalDate.of(parse[0].toInt(), 6, 1)
+                days = 30
+            }
+            7 -> {
+                date = LocalDate.of(parse[0].toInt(), 7, 1)
+                days = 31
+            }
+            8 -> {
+                date = LocalDate.of(parse[0].toInt(), 8, 1)
+                days = 31
+            }
+            9 -> {
+                date = LocalDate.of(parse[0].toInt(), 9, 1)
+                days = 30
+            }
+            10 -> {
+                date = LocalDate.of(parse[0].toInt(), 10, 1)
+                days = 31
+            }
+            11 -> {
+                date = LocalDate.of(parse[0].toInt(), 11, 1)
+                days = 30
+            }
+            12 -> {
+                date = LocalDate.of(parse[0].toInt(), 12, 1)
+                days = 31
+            }
         }
-        cursor.close()
-        db.close()
-        return flag;
+
+
+        for (i in 0..days - 1) {
+            var changeDate = date.plusDays(i.toLong()).toString()
+            dayAlchol.add(findAlcohol(changeDate)) // 날마다 종류별 1개씩 마신 양 가져오기
+            //해야 할 작업 작성부분
+
+        }
+
+        return dayAlchol
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getDailyGoal(cmonth: Int): ArrayList<Int> {
+        var daily_goal = ArrayList<Int>()
+        lateinit var date: LocalDate
+        var days = 0
+        val now = LocalDate.now().toString()
+        var parse = now.split("-")
+        when (cmonth) {
+            1 -> {
+                date = LocalDate.of(parse[0].toInt(), 1, 1)
+                days = 31
+            }
+            2 -> {
+                date = LocalDate.of(parse[0].toInt(), 2, 1)
+                days = 30
+            }
+            3 -> {
+                date = LocalDate.of(parse[0].toInt(), 3, 1)
+                days = 31
+            }
+            4 -> {
+                date = LocalDate.of(parse[0].toInt(), 4, 1)
+                days = 30
+            }
+            5 -> {
+                date = LocalDate.of(parse[0].toInt(), 5, 1)
+                days = 31
+            }
+            6 -> {
+                date = LocalDate.of(parse[0].toInt(), 6, 1)
+                days = 30
+            }
+            7 -> {
+                date = LocalDate.of(parse[0].toInt(), 7, 1)
+                days = 31
+            }
+            8 -> {
+                date = LocalDate.of(parse[0].toInt(), 8, 1)
+                days = 31
+            }
+            9 -> {
+                date = LocalDate.of(parse[0].toInt(), 9, 1)
+                days = 30
+            }
+            10 -> {
+                date = LocalDate.of(parse[0].toInt(), 10, 1)
+                days = 31
+            }
+            11 -> {
+                date = LocalDate.of(parse[0].toInt(), 11, 1)
+                days = 30
+            }
+            12 -> {
+                date = LocalDate.of(parse[0].toInt(), 12, 1)
+                days = 31
+            }
+        }
+
+
+        for (i in 0..days - 1) {
+            var changeDate = date.plusDays(i.toLong()).toString()
+            daily_goal.add(findDailyGoal(changeDate).toInt()) // 날마다 종류별 1개씩 마신 양 가져오기
+            //해야 할 작업 작성부분
+
+        }
+
+        return daily_goal
+
     }
 
 
 
 }
+
+
+
